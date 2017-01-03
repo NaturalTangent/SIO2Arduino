@@ -35,13 +35,13 @@
 //#define ARDUINO_TEENSY          // PJRC Teensy 2.0
 
 // Uncomment this line if you are using an LCD display
-//#define LCD_DISPLAY
+#define LCD_DISPLAY
 
 // Uncomment this line if you are using a hardware button for image selection
 #define SELECTOR_BUTTON
 
 // Uncomment this line if you want a reset button (automatically mounts /AUTORUN.ATR)
-//#define RESET_BUTTON
+#define RESET_BUTTON
 
 // uncomment if using an Ethernet shield for SD capabilities
 //#define ETHERNET_SHIELD

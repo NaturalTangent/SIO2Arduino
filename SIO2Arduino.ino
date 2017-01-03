@@ -2,6 +2,7 @@
  * sio2arduino.ino - An Atari 8-bit device emulator for Arduino.
  *
  * Copyright (c) 2012 Whizzo Software LLC (Daniel Noguerol)
+ * ** Minor changes by Elias Zacarias (January 2017)
  *
  * This file is part of the SIO2Arduino project which emulates
  * Atari 8-bit SIO devices on Arduino hardware.
@@ -30,6 +31,15 @@
 #include <LiquidCrystal.h>
 #endif
 
+/* Forward declarations */
+DriveStatus* getDeviceStatus(int deviceId);
+SectorDataInfo* readSector(int deviceId, unsigned long sector, byte *data);
+boolean writeSector(int deviceId, unsigned long sector, byte* data, unsigned long length);
+boolean format(int deviceId, int density);
+int getFileList(int startIndex, int count, FileEntry *entries);
+void mountFileIndex(int deviceId, int ix);
+void changeDirectory(int ix);
+
 /**
  * Global variables
  */
@@ -45,9 +55,6 @@ DiskDrive drive1;
 boolean isSwitchPressed = false;
 unsigned long lastSelectionPress;
 boolean isFileOpened;
-#endif
-#ifdef RESET_BUTTON
-unsigned long lastResetPress;
 #endif
 #ifdef LCD_DISPLAY
 LiquidCrystal lcd(PIN_LCD_RD,PIN_LCD_ENABLE,PIN_LCD_DB4,PIN_LCD_DB5,PIN_LCD_DB6,PIN_LCD_DB7);
@@ -109,6 +116,13 @@ void setup() {
   #ifdef LCD_DISPLAY
     lcd.print("READY");
   #endif
+
+  #ifdef RESET_BUTTON
+  // watch the reset button
+  if (digitalRead(PIN_RESET) == HIGH) {
+    mountFilename(0, "AUTORUN.ATR");
+  }
+  #endif
 }
 
 void loop() {
@@ -117,20 +131,13 @@ void loop() {
   
   #ifdef SELECTOR_BUTTON
   // watch the selector button (accounting for debounce)
-  if (digitalRead(PIN_SELECTOR) == HIGH && millis() - lastSelectionPress > 250) {
+  if ((digitalRead(PIN_SELECTOR) == HIGH) && (isSwitchPressed == false) && millis() - lastSelectionPress > 250) {
     lastSelectionPress = millis();
     changeDisk(0);
   }
+  isSwitchPressed = digitalRead(PIN_SELECTOR);
   #endif
-  
-  #ifdef RESET_BUTTON
-  // watch the reset button
-  if (digitalRead(PIN_RESET) == HIGH && millis() - lastResetPress > 250) {
-    lastResetPress = millis();
-    mountFilename(0, "AUTORUN.ATR");
-  }
-  #endif
-  
+
   #ifdef ARDUINO_TEENSY
     if (SIO_UART.available())
       SIO_CALLBACK();
