@@ -6,8 +6,10 @@ I made the following modifications:
  * Moved the RESET button code to the setup function so it's only checked during the device startup.
  * Changed the behavior of the button so it doesn't trigger continuously while it's pressed.
  
-With the changes above the optional automount feature can coexist peacefully with the image selection mechanism,
-so you get both options if you select them.
+With the changes above the optional automount feature can coexist peacefully with the image selection mechanism, so you get both options if you select them.
+
+I also created a simple PCB to wire everything together in a more compact device.
+You can find more information here: 
 
 ------------------------------------------------------------------
 :: ORIGINAL README FOLLOWS ::
