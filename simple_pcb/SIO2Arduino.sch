@@ -6833,7 +6833,8 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <sheet>
 <plain>
 <text x="138.43" y="7.62" size="2.54" layer="94" align="top-left">Elias Zacarias</text>
-<text x="85.09" y="5.08" size="2.54" layer="94" align="top-left">Simple PCB for SIO2Arduino.</text>
+<text x="85.09" y="5.08" size="2.54" layer="94" align="top-left">Simple PCB for SIO2Arduino.
+v1.2</text>
 </plain>
 <instances>
 <instance part="JP3" gate="A" x="109.22" y="30.48"/>
@@ -7175,4 +7176,10 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </sheets>
 </schematic>
 </drawing>
+<compatibility>
+<note version="6.3" minversion="6.2.2" severity="warning">
+Since Version 6.2.2 text objects can contain more than one line,
+which will not be processed correctly with this version.
+</note>
+</compatibility>
 </eagle>
