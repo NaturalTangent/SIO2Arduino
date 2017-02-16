@@ -33,6 +33,7 @@
 #define ARDUINO_UNO              // Arduino Uno board
 //#define ARDUINO_MEGA           // Arduino Mega 2560/ADK board
 //#define ARDUINO_TEENSY          // PJRC Teensy 2.0
+//#define ARDUINO_LEONARDO        // Arduino Leonardo
 
 // Uncomment this line if you are using an LCD display
 #define LCD_DISPLAY
@@ -91,6 +92,12 @@
     #define PIN_SD_DO         2   // the SD breakout board's DO pin
     #define PIN_SD_CLK        3   // the SD breakout board's CLK pin
   #endif
+  #ifdef ARDUINO_LEONARDO
+    #define PIN_SD_CS         SS   // the SD breakout board's SS (chip select) pin
+    #define PIN_SD_DI         11   // the SD breakout board's DI pin (MOSI)
+    #define PIN_SD_DO         12   // the SD breakout board's DO pin (MISO)
+    #define PIN_SD_CLK        13   // the SD breakout board's CLK pin
+  #endif
 #endif
 
 #ifdef SELECTOR_BUTTON
@@ -124,7 +131,7 @@
 #endif
 
 // the hardware UART to use for SIO bus communication
-#if defined(ARDUINO_MEGA) || defined(ARDUINO_TEENSY)
+#if defined(ARDUINO_MEGA) || defined(ARDUINO_TEENSY) || defined(ARDUINO_LEONARDO)
   #define SIO_UART     Serial1
   #define SIO_CALLBACK serialEvent1
 #else
