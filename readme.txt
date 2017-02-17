@@ -1,3 +1,8 @@
+This is the fork of the battlecoder's code.
+I've added the support for the Arduino Leonardo board.
+
+Original readme:
+------------------------------------------------------------------
 This is a fork of Daniel Noguerol's SIO2Arduino Project.
 
 I made the following modifications:
