@@ -60,6 +60,72 @@ boolean isFileOpened;
 LiquidCrystal lcd(PIN_LCD_RD,PIN_LCD_ENABLE,PIN_LCD_DB4,PIN_LCD_DB5,PIN_LCD_DB6,PIN_LCD_DB7);
 #endif
 
+#ifdef LCD_KEYPAD_SHEILD
+
+int lcd_key     = 0;
+int adc_key_in  = 0;
+#define btnRIGHT  0
+#define btnUP     1
+#define btnDOWN   2
+#define btnLEFT   3
+#define btnSELECT 4
+#define btnNONE   5
+
+// read the buttons
+int read_LCD_buttons()
+{
+
+ adc_key_in = analogRead(0);      // read the value from the sensor
+ // my buttons when read are centered at these valies: 0, 144, 329, 504, 741
+ // we add approx 50 to those values and check to see if we are close
+ if (adc_key_in > 1000) return btnNONE; // We make this the 1st option for speed reasons since it will be the most likely result
+ // For V1.1 us this threshold
+ if (adc_key_in < 50)
+ {
+   LOG_MSG("btnRIGHT");
+   return btnRIGHT;
+ }
+
+ if (adc_key_in < 250)
+ {
+   LOG_MSG("btnUP");
+   return btnUP;
+ }
+
+ if (adc_key_in < 450)
+ {
+   LOG_MSG("btnDOWN");
+   return btnDOWN;
+ }
+
+ if (adc_key_in < 650)
+ {
+   LOG_MSG("btnLEFT");
+   return btnLEFT;
+ }
+
+ if (adc_key_in < 850)
+ {
+   LOG_MSG("btnSELECT");
+   return btnSELECT;
+ }
+
+ // For V1.0 comment the other threshold and use the one below:
+/*
+ if (adc_key_in < 50)   return btnRIGHT;
+ if (adc_key_in < 195)  return btnUP;
+ if (adc_key_in < 380)  return btnDOWN;
+ if (adc_key_in < 555)  return btnLEFT;
+ if (adc_key_in < 790)  return btnSELECT;
+*/
+
+
+ return btnNONE;  // when all others fail, return this...
+}
+
+#endif
+
+
 void setup() {
 #ifdef DEBUG
   // set up logging serial port
@@ -69,6 +135,7 @@ void setup() {
   // initialize serial port to Atari
   SIO_UART.begin(19200);
 
+#ifndef LCD_KEYPAD_SHEILD
   // set pin modes
   #ifdef SELECTOR_BUTTON
   pinMode(PIN_SELECTOR, INPUT);
@@ -76,6 +143,7 @@ void setup() {
   #ifdef RESET_BUTTON
   pinMode(PIN_RESET, INPUT);
   #endif
+#endif
 
   #ifdef LCD_DISPLAY
   // set up LCD if appropriate
@@ -92,15 +160,15 @@ void setup() {
     LOG_MSG_CR(" failed.");
     #ifdef LCD_DISPLAY
       lcd.print("SD Init Error");
-    #endif     
+    #endif
     return;
   }
-  
+
   if (!volume.init(&card)) {
     LOG_MSG_CR(" failed.");
     #ifdef LCD_DISPLAY
       lcd.print("SD Volume Error");
-    #endif     
+    #endif
     return;
   }
 
@@ -108,7 +176,7 @@ void setup() {
     LOG_MSG_CR(" failed.");
     #ifdef LCD_DISPLAY
       lcd.print("SD Root Error");
-    #endif     
+    #endif
     return;
   }
 
@@ -117,26 +185,43 @@ void setup() {
     lcd.print("READY");
   #endif
 
+#ifdef LCD_KEYPAD_SHEILD
+  if(read_LCD_buttons() == btnLEFT)
+  {
+    mountFilename(0, "AUTORUN.ATR");
+  }
+#else
   #ifdef RESET_BUTTON
   // watch the reset button
   if (digitalRead(PIN_RESET) == HIGH) {
     mountFilename(0, "AUTORUN.ATR");
   }
   #endif
+#endif
 }
 
 void loop() {
   // let the SIO channel do its thing
   sioChannel.runCycle();
-  
-  #ifdef SELECTOR_BUTTON
-  // watch the selector button (accounting for debounce)
-  if ((digitalRead(PIN_SELECTOR) == HIGH) && (isSwitchPressed == false) && millis() - lastSelectionPress > 250) {
-    lastSelectionPress = millis();
-    changeDisk(0);
-  }
-  isSwitchPressed = digitalRead(PIN_SELECTOR);
-  #endif
+
+  boolean newSwitchState = (read_LCD_buttons() == btnSELECT);
+
+   #ifdef LCD_KEYPAD_SHEILD
+    if(newSwitchState&& (isSwitchPressed == false) && millis() - lastSelectionPress > 250) {
+      lastSelectionPress = millis();
+      changeDisk(0);
+    }
+    isSwitchPressed = newSwitchState;
+   #else
+     #ifdef SELECTOR_BUTTON
+     // watch the selector button (accounting for debounce)
+     if ((digitalRead(PIN_SELECTOR) == HIGH) && (isSwitchPressed == false) && millis() - lastSelectionPress > 250) {
+       lastSelectionPress = millis();
+       changeDisk(0);
+     }
+     isSwitchPressed = digitalRead(PIN_SELECTOR);
+     #endif
+   #endif
 
   #ifdef ARDUINO_TEENSY
     if (SIO_UART.available())
@@ -167,7 +252,7 @@ boolean writeSector(int deviceId, unsigned long sector, byte* data, unsigned lon
 
 boolean format(int deviceId, int density) {
   char name[13];
-  
+
   // get current filename
   file.getFilename(name);
 
@@ -191,7 +276,7 @@ boolean format(int deviceId, int density) {
     return true;
   } else {
     return false;
-  }  
+  }
 }
 
 void changeDisk(int deviceId) {
@@ -202,13 +287,13 @@ void changeDisk(int deviceId) {
   while (!imageChanged) {
     // get next dir entry
     int8_t result = currDir.readDir((dir_t*)&dir);
-    
+
     // if we got back a 0, rewind the directory and get the first dir entry
     if (!result) {
       currDir.rewind();
       result = currDir.readDir((dir_t*)&dir);
     }
-    
+
     // if we have a valid file response code, open it
     if (result > 0 && isValidFilename((char*)&dir.name)) {
       createFilename(name, (char*)dir.name);
@@ -218,19 +303,19 @@ void changeDisk(int deviceId) {
 }
 
 boolean isValidFilename(char *s) {
-  return (  s[0] != '.' &&    // ignore hidden files 
+  return (  s[0] != '.' &&    // ignore hidden files
             s[0] != '_' && (  // ignore bogus files created by OS X
              (s[8] == 'A' && s[9] == 'T' && s[10] == 'R')
           || (s[8] == 'X' && s[9] == 'F' && s[10] == 'D')
-#ifdef PRO_IMAGES             
+#ifdef PRO_IMAGES
           || (s[8] == 'P' && s[9] == 'R' && s[10] == 'O')
-#endif          
-#ifdef ATX_IMAGES              
+#endif
+#ifdef ATX_IMAGES
           || (s[8] == 'A' && s[9] == 'T' && s[10] == 'X')
-#endif              
+#endif
 #ifdef XEX_IMAGES
           || (s[8] == 'X' && s[9] == 'E' && s[10] == 'X')
-#endif              
+#endif
           )
         );
 }
@@ -281,7 +366,7 @@ int getFileList(int startIndex, int count, FileEntry *entries) {
       currentEntry++;
     }
   }
-  
+
   return ix;
 }
 
@@ -295,7 +380,7 @@ void changeDirectory(int ix) {
   char name[13];
   SdFile subDir;
 
-  if (ix > -1) {  
+  if (ix > -1) {
     getFileList(ix, 1, entries);
     createFilename(name, entries[0].name);
     if (subDir.open(&currDir, name, O_READ)) {
@@ -339,7 +424,7 @@ boolean mountFilename(int deviceId, char *name) {
   if (file.isOpen()) {
     file.close();
   }
-  
+
   if (file.open(&currDir, name, O_RDWR | O_SYNC) && drive1.setImageFile(&file)) {
     LOG_MSG_CR(name);
 
@@ -351,6 +436,6 @@ boolean mountFilename(int deviceId, char *name) {
 
     return true;
   }
-  
+
   return false;
 }

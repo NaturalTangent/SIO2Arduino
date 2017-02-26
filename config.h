@@ -30,8 +30,8 @@
 // These are the Arduino devices that can be used. I'm sure others would work,
 // but these are the only ones I have to test with. Only one of these should
 // be uncommented.
-#define ARDUINO_UNO              // Arduino Uno board
-//#define ARDUINO_MEGA           // Arduino Mega 2560/ADK board
+//#define ARDUINO_UNO              // Arduino Uno board
+#define ARDUINO_MEGA           // Arduino Mega 2560/ADK board
 //#define ARDUINO_TEENSY          // PJRC Teensy 2.0
 //#define ARDUINO_LEONARDO        // Arduino Leonardo
 
@@ -47,27 +47,33 @@
 // uncomment if using an Ethernet shield for SD capabilities
 //#define ETHERNET_SHIELD
 
+#define LCD_KEYPAD_SHEILD
+
 // uncomment for PRO image format support
-//#define PRO_IMAGES
+#define PRO_IMAGES
 
 // uncomment for ATX image format support (Mega 2560 only)
-//#define ATX_IMAGES
+#define ATX_IMAGES
 
 // uncomment for XEX "image" support
 #define XEX_IMAGES
 
 // uncomment this to enable debug logging -- make sure the HARDWARE_UART isn't the same as
 // the LOGGING_UART defined at the bottom of the file
-//#define DEBUG 
+//#define DEBUG
 
 /*
  * These are the Arduino pin definitions.
  */
- 
+
+#ifdef LCD_KEYPAD_SHEILD
+  #define PIN_ATARI_CMD         46
+#else
 #ifdef ARDUINO_TEENSY
   #define PIN_ATARI_CMD         4    // the Atari SIO command line - usually the purple wire on the SIO cable
 #else
   #define PIN_ATARI_CMD         2    // the Atari SIO command line - usually the purple wire on the SIO cable
+#endif
 #endif
 
 // for now, you can't change these pin definitions
@@ -114,12 +120,21 @@
 
 #ifdef LCD_DISPLAY
   #ifdef ARDUINO_MEGA
-    #define PIN_LCD_RD          5    // *
-    #define PIN_LCD_ENABLE      6    // *
-    #define PIN_LCD_DB4         10   // * LCD display pins
-    #define PIN_LCD_DB5         9    // *
-    #define PIN_LCD_DB6         8    // *
-    #define PIN_LCD_DB7         7    // *
+    #ifdef LCD_KEYPAD_SHEILD
+      #define PIN_LCD_RD          8    // *
+      #define PIN_LCD_ENABLE      9    // *
+      #define PIN_LCD_DB4         4   // * LCD display pins
+      #define PIN_LCD_DB5         5    // *
+      #define PIN_LCD_DB6         6    // *
+      #define PIN_LCD_DB7         7    // *
+    #else
+      #define PIN_LCD_RD          5    // *
+      #define PIN_LCD_ENABLE      6    // *
+      #define PIN_LCD_DB4         10   // * LCD display pins
+      #define PIN_LCD_DB5         9    // *
+      #define PIN_LCD_DB6         8    // *
+      #define PIN_LCD_DB7         7    // *
+    #endif
   #else
     #define PIN_LCD_RD          4    // *
     #define PIN_LCD_ENABLE      5    // *
