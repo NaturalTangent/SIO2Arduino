@@ -67,7 +67,7 @@
  */
 
 #ifdef LCD_KEYPAD_SHEILD
-  #define PIN_ATARI_CMD         46
+  #define PIN_ATARI_CMD         17
 #else
 #ifdef ARDUINO_TEENSY
   #define PIN_ATARI_CMD         4    // the Atari SIO command line - usually the purple wire on the SIO cable

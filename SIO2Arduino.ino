@@ -82,31 +82,31 @@ int read_LCD_buttons()
  // For V1.1 us this threshold
  if (adc_key_in < 50)
  {
-   LOG_MSG("btnRIGHT");
+   LOG_MSG("btnRIGHT\n");
    return btnRIGHT;
  }
 
  if (adc_key_in < 250)
  {
-   LOG_MSG("btnUP");
+   LOG_MSG("btnUP\n");
    return btnUP;
  }
 
  if (adc_key_in < 450)
  {
-   LOG_MSG("btnDOWN");
+   LOG_MSG("btnDOWN\n");
    return btnDOWN;
  }
 
  if (adc_key_in < 650)
  {
-   LOG_MSG("btnLEFT");
+   LOG_MSG("btnLEFT\n");
    return btnLEFT;
  }
 
  if (adc_key_in < 850)
  {
-   LOG_MSG("btnSELECT");
+   LOG_MSG("btnSELECT\n");
    return btnSELECT;
  }
 
